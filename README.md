@@ -9,3 +9,7 @@ Project which calls 2 api endpoints and aggregates the responses by adding the u
 yarn
 yarn start
 ```
+
+## Routes
+Retrieves the latest 10 posts from the posts api, and returns the data with the user's information aggragated to the response:
+- http://localhost:8080/latest-posts
