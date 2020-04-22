@@ -1,5 +1,8 @@
 const { getPosts } = require("./posts-api");
 const { getUserById } = require("./users-api");
+const withCacheAsync = require("./with-cache-async");
+
+const getUserByIdWithCache = withCacheAsync(getUserById, { ttl: 1000 * 30 });
 
 const latestPostsHandler = async (req, res, next) => {
   try {
@@ -7,20 +10,11 @@ const latestPostsHandler = async (req, res, next) => {
     // get 10 posts from the post api
     const posts = await getPosts();
     const latestPosts = posts.slice(0, 10);
-    // fetch user data for each post
-    const grabbedUsers = new Map();
 
     for (let latestPost of latestPosts) {
-      let userData;
-      if (!grabbedUsers.has(latestPost.userId)) {
-        userData = await getUserById(latestPost.userId);
-        grabbedUsers.set(latestPost.userId, userData);
-      } else {
-        userData = grabbedUsers.get(latestPost.userId);
-      }
-
-      latestPost.user = userData;
+      latestPost.user = await getUserByIdWithCache(latestPost.userId);
     }
+
     res.json(latestPosts);
   } catch (error) {
     return next(error);
